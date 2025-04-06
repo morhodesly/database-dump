@@ -10,23 +10,23 @@ By participating in this project, you agree to act with respect towards other co
 
 ### Reporting Bugs
 
-- Check the [issue tracker](https://github.com/yourusername/database-dump/issues) to see if the bug has already been reported
-- If it hasn't, [open a new issue](https://github.com/yourusername/database-dump/issues/new/choose) using the bug report template
+- Check the [issue tracker](https://github.com/morhodesly/database-dump/issues) to see if the bug has already been reported
+- If it hasn't, [open a new issue](https://github.com/morhodesly/database-dump/issues/new/choose) using the bug report template
 - Include a clear title and description
 - Provide as much relevant information as possible (steps to reproduce, expected vs. actual behavior)
 - Include code samples or error logs if applicable
 
 ### Suggesting Features
 
-- Check the [issue tracker](https://github.com/yourusername/database-dump/issues) to see if the feature has already been suggested
-- If it hasn't, [open a new issue](https://github.com/yourusername/database-dump/issues/new/choose) using the feature request template
+- Check the [issue tracker](https://github.com/morhodesly/database-dump/issues) to see if the feature has already been suggested
+- If it hasn't, [open a new issue](https://github.com/morhodesly/database-dump/issues/new/choose) using the feature request template
 - Describe the feature clearly, including the problem it solves
 - Explain how the feature would benefit users
 
 ### Pull Requests
 
 1. Fork the repository
-2. Create a new branch for your feature or bug fix
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Add or update tests as needed
 5. Ensure all tests pass: `cargo test`
@@ -39,7 +39,7 @@ By participating in this project, you agree to act with respect towards other co
 ## Development Setup
 
 1. Install Rust and Cargo from [rustup.rs](https://rustup.rs/)
-2. Clone the repository: `git clone https://github.com/yourusername/database-dump.git`
+2. Clone the repository: `git clone https://github.com/morhodesly/database-dump.git`
 3. Navigate to the project directory: `cd database-dump`
 4. Install development dependencies: `cargo build`
 5. For testing, you'll need a PostgreSQL database
