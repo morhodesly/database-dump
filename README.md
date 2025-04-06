@@ -1,17 +1,36 @@
 # PostgreSQL Database Dump Utility
 
-A command-line tool written in Rust to create SQL dump files from PostgreSQL databases. The dump includes tables, data, sequences, types, users, roles, and their permissions.
+A robust command-line tool written in Rust for creating comprehensive SQL dump files from PostgreSQL databases. This utility specializes in exporting complete database structures including tables, data, sequences, types, users, roles, and their permissions - all properly ordered for seamless reimporting.
+
+Unlike standard pg_dump, this tool focuses on creating clean, selective dumps with proper role permissions and database associations. Perfect for database migrations, backups, and development environment setup.
 
 ![GitHub](https://img.shields.io/github/license/morhodesly/database-dump)
 
 ## Features
 
-- Dumps complete PostgreSQL database structure and data
+- Creates complete PostgreSQL database dumps with proper dependency ordering
 - Exports only users/roles directly associated with the database 
-- Properly orders SQL statements for clean imports
+- Includes tables, data, sequences, types, constraints, and indexes
 - Creates database dump files in a dedicated directory
-- Simple command-line interface
-- Cross-platform (Linux, macOS, Windows)
+- Simple command-line interface with sensible defaults
+- Cross-platform compatibility (Linux, macOS, Windows)
+- Resolves common pg_dump issues with role permissions and type handling
+
+## Comparison with pg_dump
+
+While PostgreSQL's built-in pg_dump tool is powerful, this utility addresses several limitations:
+
+| Feature | PostgreSQL Database Dump Utility | Standard pg_dump |
+|---------|----------------------------------|------------------|
+| Role Export | ✅ Only exports roles associated with the database | ❌ Requires separate handling with pg_dumpall |
+| Role Permissions | ✅ Preserves exact role permissions | ❌ Often requires manual adjustment |
+| Dependency Handling | ✅ Optimized dependency resolution | ✅ Good but sometimes requires manual ordering |
+| Custom Types | ✅ Full support with proper ordering | ⚠️ Sometimes requires special handling |
+| Output Organization | ✅ Structured, categorized output | ⚠️ Requires custom options to organize |
+| Ease of Use | ✅ Simple command options | ⚠️ Requires multiple options for complete dumps |
+| Default Output | ✅ Creates files by default | ⚠️ Defaults to stdout |
+
+This tool is particularly useful when you need to create deployable SQL dumps that include proper role handling, which is typically challenging with standard tools.
 
 ## Installation
 
