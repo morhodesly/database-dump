@@ -1,0 +1,184 @@
+name: Version Release Workflow
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'Cargo.toml'
+
+# Add permissions for the workflow
+permissions:
+  contents: write
+
+jobs:
+  check-and-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      created_tag: ${{ steps.check_tag.outputs.tag_exists }}
+      new_tag_created: ${{ steps.create_tag.outputs.created }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current version from Cargo.toml
+        id: get_version
+        run: |
+          VERSION=$(grep -m1 -oP '^version = "\K[^"]+' Cargo.toml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG_EXISTS=$(git tag -l "v${{ steps.get_version.outputs.version }}")
+          if [ -z "$TAG_EXISTS" ]; then
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+            echo "Tag v${{ steps.get_version.outputs.version }} does not exist yet"
+          else
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+            echo "Tag v${{ steps.get_version.outputs.version }} already exists"
+          fi
+
+      - name: Create new tag
+        id: create_tag
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ steps.get_version.outputs.version }}" -m "Release v${{ steps.get_version.outputs.version }}"
+          git push origin "v${{ steps.get_version.outputs.version }}"
+          echo "created=true" >> $GITHUB_OUTPUT
+          echo "Created and pushed tag v${{ steps.get_version.outputs.version }}"
+
+  # Debug job to help with troubleshooting
+  debug-outputs:
+    needs: check-and-tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug Outputs
+        run: |
+          echo "Version from check-and-tag: ${{ needs.check-and-tag.outputs.version }}"
+          echo "Tag exists: ${{ needs.check-and-tag.outputs.created_tag }}"
+          echo "New tag created: ${{ needs.check-and-tag.outputs.new_tag_created }}"
+
+  # Add a job to create a release and build binaries right here
+  create_release:
+    needs: [check-and-tag, debug-outputs]
+    if: needs.check-and-tag.outputs.new_tag_created == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Debug Reference
+        run: |
+          echo "Version: ${{ needs.check-and-tag.outputs.version }}"
+          git fetch --tags
+          git tag -l
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.check-and-tag.outputs.version }}
+          release_name: Release v${{ needs.check-and-tag.outputs.version }}
+          draft: false
+          prerelease: false
+          body: |
+            PostgreSQL Database Dump Utility v${{ needs.check-and-tag.outputs.version }}
+            
+            ## Installation
+            
+            Download the appropriate binary for your platform:
+            - Linux: `database-dump-linux`
+            - macOS: `database-dump-macos`
+            - Windows: `database-dump-windows.exe`
+
+  build_linux:
+    needs: create_release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Fetch tags
+        run: git fetch --tags
+        
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Build
+        run: cargo build --release
+        
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./target/release/database-dump
+          asset_name: database-dump-linux
+          asset_content_type: application/octet-stream
+
+  build_windows:
+    needs: create_release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Fetch tags
+        run: git fetch --tags
+        
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Build
+        run: cargo build --release
+        
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./target/release/database-dump.exe
+          asset_name: database-dump-windows.exe
+          asset_content_type: application/octet-stream
+
+  build_macos:
+    needs: create_release
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Fetch tags
+        run: git fetch --tags
+        
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Build
+        run: cargo build --release
+        
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./target/release/database-dump
+          asset_name: database-dump-macos
+          asset_content_type: application/octet-stream 
